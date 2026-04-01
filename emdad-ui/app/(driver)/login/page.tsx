@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -35,15 +36,15 @@ function EyeOffIcon({ size = 22 }: { size?: number }) {
 export default function DriverLoginPage() {
   const router = useRouter();
 
-  const [lang, setLang]           = useState<Lang>("ar");
-  const [mounted, setMounted]     = useState(false);
+  const [lang, setLang]             = useState<Lang>("ar");
+  const [mounted, setMounted]       = useState(false);
   const [employeeId, setEmployeeId] = useState("");
-  const [password, setPassword]   = useState("");
-  const [showPass, setShowPass]   = useState(false);
-  const [remember, setRemember]   = useState(false);
-  const [busy, setBusy]           = useState(false);
-  const [errors, setErrors]       = useState<Record<string, string>>({});
-  const [globalErr, setGlobalErr] = useState("");
+  const [password, setPassword]     = useState("");
+  const [showPass, setShowPass]     = useState(false);
+  const [remember, setRemember]     = useState(false);
+  const [busy, setBusy]             = useState(false);
+  const [errors, setErrors]         = useState<Record<string, string>>({});
+  const [globalErr, setGlobalErr]   = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem(LANG_KEY);
@@ -55,36 +56,43 @@ export default function DriverLoginPage() {
 
   useEffect(() => { try { localStorage.setItem(LANG_KEY, lang); } catch { /**/ } }, [lang]);
 
-  if (!mounted) return null;
-
+  // ── Derived (no hooks below) ──
   const isAr = lang === "ar";
   const dir  = isAr ? "rtl" : "ltr";
 
-  const t = {
-    ...(isAr ? {
-      brand: "راصد", title: "تسجيل دخول السائق",
-      subtitle: "أدخل رقمك الوظيفي وكلمة المرور للمتابعة",
-      idLabel: "الرقم الوظيفي", idPlaceholder: "مثال: DRV-1001",
-      passLabel: "كلمة المرور", passPlaceholder: "••••••••",
-      showPassword: "إظهار كلمة المرور", hidePassword: "إخفاء كلمة المرور",
-      remember: "تذكّرني", submit: "دخول", busy: "جارٍ التحقق...",
-      required: "هذا الحقل مطلوب",
-      errInvalid: "رقم الموظف أو كلمة المرور غير صحيحة",
-      errServer: "خطأ في الاتصال بالخادم، حاول مجدداً",
-      footer: "منصة راصد لإدارة السائقين ومتابعة تعبئة الوقود",
-    } : {
-      brand: "Rasid", title: "Driver Login",
-      subtitle: "Enter your employee ID and password to continue",
-      idLabel: "Employee ID", idPlaceholder: "e.g. DRV-1001",
-      passLabel: "Password", passPlaceholder: "••••••••",
-      showPassword: "Show password", hidePassword: "Hide password",
-      remember: "Remember me", submit: "Login", busy: "Verifying...",
-      required: "This field is required",
-      errInvalid: "Invalid employee ID or password",
-      errServer: "Server error, please try again",
-      footer: "Rasid Fleet & Fuel Management",
-    }),
-  };
+  // t must be computed before the mounted guard (useMemo is a hook)
+  const t = useMemo(() => isAr ? {
+    brand: "راصد", title: "تسجيل دخول السائق",
+    subtitle: "أدخل رقمك الوظيفي وكلمة المرور للمتابعة",
+    idLabel: "الرقم الوظيفي", idPlaceholder: "مثال: DRV-1001",
+    passLabel: "كلمة المرور", passPlaceholder: "••••••••",
+    showPassword: "إظهار كلمة المرور", hidePassword: "إخفاء كلمة المرور",
+    remember: "تذكّرني", submit: "دخول", busy: "جارٍ التحقق...",
+    required: "هذا الحقل مطلوب",
+    errInvalid: "رقم الموظف أو كلمة المرور غير صحيحة",
+    errServer: "خطأ في الاتصال بالخادم، حاول مجدداً",
+    footer: "منصة راصد لإدارة السائقين ومتابعة تعبئة الوقود",
+    backLabel: "رجوع لصفحة التسجيل",
+    managerQuestion: "هل أنت مدير؟",
+    managerLink: "سجّل دخولك من هنا",
+  } : {
+    brand: "Rasid", title: "Driver Login",
+    subtitle: "Enter your employee ID and password to continue",
+    idLabel: "Employee ID", idPlaceholder: "e.g. DRV-1001",
+    passLabel: "Password", passPlaceholder: "••••••••",
+    showPassword: "Show password", hidePassword: "Hide password",
+    remember: "Remember me", submit: "Login", busy: "Verifying...",
+    required: "This field is required",
+    errInvalid: "Invalid employee ID or password",
+    errServer: "Server error, please try again",
+    footer: "Rasid Fleet & Fuel Management",
+    backLabel: "Back to main page",
+    managerQuestion: "Are you a manager?",
+    managerLink: "Sign in here",
+  }, [isAr]);
+
+  // Guard: don't render until client is mounted (avoids hydration mismatch)
+  if (!mounted) return null;
 
   const canSubmit = employeeId.trim().length > 0 && password.length > 0 && !busy;
 
@@ -133,7 +141,6 @@ export default function DriverLoginPage() {
         <button onClick={() => setLang("ar")} className={lang === "ar" ? "text-purple-600" : "text-slate-500 hover:text-slate-800"}>AR</button>
       </div>
 
-      {/* ── البوكس أكبر max-w-[620px] ── */}
       <div className="w-full max-w-[620px]">
         <div className="rounded-[36px] border border-slate-200/70 bg-white/25 backdrop-blur-xl overflow-hidden">
 
@@ -175,21 +182,16 @@ export default function DriverLoginPage() {
                 {errors.employeeId && <p className={eCls}>{errors.employeeId}</p>}
               </div>
 
-              {/* Password + eye icon */}
+              {/* Password */}
               <div className={isAr ? "text-right" : "text-left"}>
                 <label className="block text-sm font-semibold text-slate-800 mb-2">
                   {t.passLabel} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex items-stretch gap-3">
-                  {/* Eye button */}
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
-                    className={[
-                      "h-[56px] w-[72px] shrink-0 rounded-2xl border border-slate-200 bg-white/90",
-                      "flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white",
-                      "outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-500",
-                    ].join(" ")}
+                    className="h-[56px] w-[72px] shrink-0 rounded-2xl border border-slate-200 bg-white/90 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-500"
                     aria-label={showPass ? t.hidePassword : t.showPassword}
                   >
                     {showPass ? <EyeIcon size={22} /> : <EyeOffIcon size={22} />}
@@ -222,6 +224,17 @@ export default function DriverLoginPage() {
               <div className="pt-1 text-xs text-slate-500 text-center">{t.footer}</div>
             </form>
           </div>
+        </div>
+
+        {/* ── رابط الرجوع للصفحة الرئيسية (تسجيل المانجر) ── */}
+        <div className="mt-6 text-center text-sm text-slate-600">
+          <span>{t.managerQuestion}</span>{" "}
+          <Link
+            href="/"
+            className="font-semibold text-sky-700 hover:text-purple-600 underline underline-offset-4 transition-colors"
+          >
+            {t.managerLink}
+          </Link>
         </div>
       </div>
     </div>

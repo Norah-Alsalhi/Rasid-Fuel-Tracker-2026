@@ -202,7 +202,7 @@ export default function ManagerDashboard() {
   useEffect(() => {
     const saved = localStorage.getItem(LANG_KEY);
     if (saved==="en"||saved==="ar") setLang(saved as Lang);
-    if (!getToken()) { window.location.replace("/manager/login"); return; }
+    if (!getToken()) { window.location.replace("/"); return; }
     setMounted(true);
     load();
   }, [load]);
@@ -291,7 +291,7 @@ export default function ManagerDashboard() {
           <NI id="fuel"    icon={<I.Fuel />}    label={t.fuel} />
         </nav>
         <div className="p-3 border-t border-white/10">
-          <Link href="/manager/login"
+          <Link href="/"
             onClick={()=>{localStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TOKEN_KEY);}}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-white/60 hover:text-white hover:bg-white/10 transition-all">
             <I.Logout/><span>{t.logout}</span>
